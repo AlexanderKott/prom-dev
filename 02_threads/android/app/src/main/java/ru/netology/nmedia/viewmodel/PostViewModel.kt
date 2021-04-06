@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
@@ -43,6 +44,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 FeedModel(posts = posts, empty = posts.isEmpty())
             } catch (e: IOException) {
                 // Получена ошибка
+                    Log.e("excx", "Получена ошибка")
                 FeedModel(error = true)
             }.also(_data::postValue)
         }
@@ -70,8 +72,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        thread { repository.likeById(id) }
+    fun likeById(post: Post) {
+        if (post.likedByMe) {
+            thread {
+                Log.e("excx", "UN like ${post.id}")
+                repository.unLikeById(post.id) }
+        } else {
+            thread {
+                Log.e("excx", "like ${post.id}")
+                repository.likeById(post.id) }
+        }
+
     }
 
     fun removeById(id: Long) {

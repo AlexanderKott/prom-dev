@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +34,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                viewModel.likeById(post)
             }
 
             override fun onRemove(post: Post) {
@@ -58,7 +59,14 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
+            Log.e("excx", "state= $state")
         })
+
+
+        binding.swipeContainer.setOnRefreshListener {
+            viewModel.loadPosts()
+            binding.swipeContainer.isRefreshing = false
+        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()

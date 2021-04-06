@@ -6,13 +6,14 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.firebase.messaging.FirebaseMessagingService
-import com.google.firebase.messaging.RemoteMessage
+//import com.google.firebase.messaging.FirebaseMessagingService
+//import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
 import kotlin.random.Random
 
 
+/*
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
     private val content = "content"
@@ -63,6 +64,7 @@ class FCMService : FirebaseMessagingService() {
             .notify(Random.nextInt(100_000), notification)
     }
 }
+*/
 
 enum class Action {
     LIKE,
