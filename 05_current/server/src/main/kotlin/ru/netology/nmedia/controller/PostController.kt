@@ -14,8 +14,10 @@ class PostController(private val service: PostService) {
     fun getById(@PathVariable id: Long) = service.getById(id)
 
     @PostMapping
-    fun save(@RequestBody dto: Post) = service.save(dto)
-
+    fun save(@RequestBody dto: Post) {
+        service.save(dto)
+       println("DTO $dto")
+    }
     @DeleteMapping("/{id}")
     fun removeById(@PathVariable id: Long) = service.removeById(id)
 

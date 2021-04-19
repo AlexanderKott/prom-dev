@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
@@ -46,12 +47,45 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         })
     }
 
+
+    fun likeById(post: Post) {
+        // old  thread { repository.likeById(id) }
+        if (!post.likedByMe) {
+            repository.likeByIDAsync(post.id, object : PostRepository.CommonByIDCallback {
+                override fun onSuccess() {
+                }
+
+                override fun onError(e: Exception) {
+                }
+            })
+        } else {
+
+            repository.dislikeByIDAsync(post.id, object : PostRepository.CommonByIDCallback {
+                override fun onSuccess() {
+                }
+
+                override fun onError(e: Exception) {
+                }
+            })
+        }
+
+    }
+
+
     fun save() {
         edited.value?.let {
-            thread {
-                repository.save(it)
+
+                repository.save(it, object : PostRepository.CommonByIDCallback {
+                    override fun onSuccess() {
+                        Log.e("execx", "onSuccess")
+                    }
+
+                    override fun onError(e: Exception) {
+                        Log.e("execx", "onError")
+                    }
+                })
+
                 _postCreated.postValue(Unit)
-            }
         }
         edited.value = empty
     }
@@ -68,12 +102,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        thread { repository.likeById(id) }
-    }
 
     fun removeById(id: Long) {
-        thread {
+
             // Оптимистичная модель
             val old = _data.value?.posts.orEmpty()
             _data.postValue(
@@ -82,10 +113,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 )
             )
             try {
-                repository.removeById(id)
+                repository.removeById(id , object : PostRepository.CommonByIDCallback {
+                    override fun onSuccess() {
+                    }
+
+                    override fun onError(e: Exception) {
+                        _data.postValue(_data.value?.copy(posts = old))
+                    }
+                })
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
-        }
+
     }
 }
