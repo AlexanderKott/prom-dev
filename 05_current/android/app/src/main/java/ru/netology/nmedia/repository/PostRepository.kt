@@ -17,7 +17,7 @@ interface PostRepository {
     }
 
     interface CommonByIDCallback {
-        fun onSuccess() {}
+        fun onSuccess(posts: Post) {}
         fun onError(e: Exception) {}
     }
 }

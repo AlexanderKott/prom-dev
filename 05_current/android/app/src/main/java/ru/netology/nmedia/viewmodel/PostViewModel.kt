@@ -34,8 +34,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         loadPosts()
     }
 
+
     fun loadPosts() {
         _data.value = FeedModel(loading = true)
+
+
         repository.getAllAsync(object : PostRepository.GetAllCallback {
             override fun onSuccess(posts: List<Post>) {
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
@@ -52,19 +55,28 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         // old  thread { repository.likeById(id) }
         if (!post.likedByMe) {
             repository.likeByIDAsync(post.id, object : PostRepository.CommonByIDCallback {
-                override fun onSuccess() {
+                override fun onSuccess(post : Post) {
+                    _data.postValue(
+                        FeedModel(posts = _data.value?.posts
+                            .orEmpty().map { if (it.id == post.id) post else it })
+                    )
                 }
 
                 override fun onError(e: Exception) {
+                    _data.postValue(FeedModel(error = true))
                 }
             })
         } else {
 
             repository.dislikeByIDAsync(post.id, object : PostRepository.CommonByIDCallback {
-                override fun onSuccess() {
+                override fun onSuccess(post : Post) {
+                    _data.postValue(
+                        FeedModel(posts = _data.value?.posts
+                            .orEmpty().map { if (it.id == post.id) post else it }))
                 }
 
                 override fun onError(e: Exception) {
+                    _data.postValue(FeedModel(error = true))
                 }
             })
         }
@@ -74,18 +86,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
-
                 repository.save(it, object : PostRepository.CommonByIDCallback {
-                    override fun onSuccess() {
+                    override fun onSuccess(post : Post) {
+                        _data.postValue(
+                            FeedModel(posts = _data.value?.posts
+                                .orEmpty().map { if (it.id == post.id) post else it }))
+
                         Log.e("execx", "onSuccess")
                     }
 
                     override fun onError(e: Exception) {
+                        _postCreated.postValue(Unit)
                         Log.e("execx", "onError")
                     }
                 })
 
-                _postCreated.postValue(Unit)
         }
         edited.value = empty
     }
@@ -104,17 +119,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun removeById(id: Long) {
-
-            // Оптимистичная модель
-            val old = _data.value?.posts.orEmpty()
-            _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                    .filter { it.id != id }
-                )
-            )
+        val old = _data.value?.posts.orEmpty()
             try {
                 repository.removeById(id , object : PostRepository.CommonByIDCallback {
-                    override fun onSuccess() {
+                    override fun onSuccess(post : Post) {
+                        _data.postValue(
+                            _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                                .filter { it.id != id }
+                            )
+                        )
                     }
 
                     override fun onError(e: Exception) {

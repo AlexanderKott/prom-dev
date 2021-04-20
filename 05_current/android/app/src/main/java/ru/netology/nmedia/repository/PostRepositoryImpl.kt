@@ -18,10 +18,9 @@ class PostRepositoryImpl : PostRepository {
     private val typeToken = object : TypeToken<List<Post>>() {}
 
     companion object {
-          const val BASE_URL = "http://144.91.65.222:9999"
+        const val BASE_URL = "http://144.91.65.222:9999"
         private val jsonType = "application/json".toMediaType()
     }
-
 
 
     override fun likeByIDAsync(id: Long, callback: PostRepository.CommonByIDCallback) {
@@ -37,8 +36,9 @@ class PostRepositoryImpl : PostRepository {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string() ?: throw RuntimeException("body is null")
                     try {
-                        callback.onSuccess()
+                        callback.onSuccess(gson.fromJson(body, Post::class.java))
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
@@ -60,8 +60,9 @@ class PostRepositoryImpl : PostRepository {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string() ?: throw RuntimeException("body is null")
                     try {
-                        callback.onSuccess()
+                        callback.onSuccess(gson.fromJson(body, Post::class.java))
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
@@ -100,15 +101,15 @@ class PostRepositoryImpl : PostRepository {
             .build()
 
         client.newCall(request)
-            .enqueue(object :  Callback{
+            .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.onError(e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string() ?: throw RuntimeException("body is null")
                     try {
-                        callback.onSuccess()
-                        Log.e("execx","post= $post")
+                        callback.onSuccess(gson.fromJson(body, typeToken.type))
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
@@ -124,14 +125,15 @@ class PostRepositoryImpl : PostRepository {
             .build()
 
         client.newCall(request)
-            .enqueue(object :  Callback{
+            .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     callback.onError(e)
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string() ?: throw RuntimeException("body is null")
                     try {
-                        callback.onSuccess()
+                        callback.onSuccess(gson.fromJson(body, typeToken.type))
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
@@ -151,11 +153,6 @@ class PostRepositoryImpl : PostRepository {
                 gson.fromJson(it, typeToken.type)
             }
     }
-
-
-
-
-
 
 
 }
