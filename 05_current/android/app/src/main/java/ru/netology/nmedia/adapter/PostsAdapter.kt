@@ -1,13 +1,20 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 
 interface OnInteractionListener {
@@ -19,10 +26,11 @@ interface OnInteractionListener {
 
 class PostsAdapter(
     private val onInteractionListener: OnInteractionListener,
+    private val url: String
 ) : ListAdapter<Post, PostViewHolder>(PostDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding, onInteractionListener)
+        return PostViewHolder(binding, onInteractionListener, url)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -34,6 +42,7 @@ class PostsAdapter(
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
+    private val url: String,
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(post: Post) {
@@ -44,6 +53,32 @@ class PostViewHolder(
             // в адаптере
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+
+
+
+            Glide.with(binding.avatar)
+                .load("$url/${post.authorAvatar}")
+                .placeholder(R.drawable.ic_loading_100dp)
+                .error(R.drawable.ic_error_100dp)
+                .timeout(10_000)
+                .transform(MultiTransformation(FitCenter(), CircleCrop()))
+                .into(binding.avatar)
+
+
+            post.attachment?.let {
+                if (it.type == AttachmentType.IMAGE) {
+                    attach.visibility = View.VISIBLE
+                    Glide.with(binding.attach)
+                        .load("$url/${it.url}")
+                        .placeholder(R.drawable.ic_loading_100dp)
+                        .error(R.drawable.ic_error_100dp)
+                        .timeout(10_000)
+                        .transform(MultiTransformation(FitCenter(), CircleCrop()))
+                        .into(binding.attach)
+                }
+            }
+
+
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
