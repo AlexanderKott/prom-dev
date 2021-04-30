@@ -2,9 +2,11 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -55,6 +57,13 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
+
+            if (state.internetError){
+                displayInternetError()
+                binding.errorGroup.isVisible = true
+                Log.e("exec","GOT internetError")
+            }
+
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
@@ -70,4 +79,12 @@ class FeedFragment : Fragment() {
 
         return binding.root
     }
+
+
+    fun displayInternetError(){
+        Toast.makeText(requireContext(),
+            "Connection error. Try again", Toast.LENGTH_SHORT)
+            .show()
+    }
+
 }

@@ -12,4 +12,7 @@ interface PostRepository {
         fun onSuccess(posts: T) {}
         fun onError(e: Exception) {}
     }
+
 }
+
+class BadConnectionException(message:String): Exception(message)
