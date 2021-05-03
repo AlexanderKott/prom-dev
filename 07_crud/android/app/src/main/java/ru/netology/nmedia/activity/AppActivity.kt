@@ -52,9 +52,9 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
                 .show()
         }
-
-        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
-            println(it.token)
-        }
+//
+//        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
+//            println(it.token)
+//        }
     }
 }
