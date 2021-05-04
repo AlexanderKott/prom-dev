@@ -63,25 +63,25 @@ class PostRepositoryImpl : PostRepository {
         })
     }
 
+    override fun dislikeById(id: Long, callback: PostRepository.Callback<Post>) {
+        PostsApi.retrofitService.dislikeById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (!response.isSuccessful) {
+                    callback.onError(RuntimeException(response.message()))
+                    return
+                }
+                callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                callback.onError(BadConnectionException(t.message ?: "BadConnectionException"))
+            }
+        })
+
+    }
+
     override fun likeById(id: Long, callback: PostRepository.Callback<Post>) {
-        if (id > 0) {
             PostsApi.retrofitService.likeById(id).enqueue(object : Callback<Post> {
-                override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                    if (!response.isSuccessful) {
-                        callback.onError(RuntimeException(response.message()))
-                        return
-
-                    }
-                    callback.onSuccess(response.body() ?: throw RuntimeException("body is null"))
-                }
-
-                override fun onFailure(call: Call<Post>, t: Throwable) {
-                    callback.onError(BadConnectionException(t.message ?: "BadConnectionException"))
-                }
-            })
-
-        } else {
-            PostsApi.retrofitService.dislikeById(abs(id)).enqueue(object : Callback<Post> {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
                         callback.onError(RuntimeException(response.message()))
@@ -95,6 +95,8 @@ class PostRepositoryImpl : PostRepository {
                 }
             })
         }
-    }
+
+
 
 }
+

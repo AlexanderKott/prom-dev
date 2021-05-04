@@ -16,6 +16,10 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.EmptyFeed
+import ru.netology.nmedia.model.ErrorFeed
+import ru.netology.nmedia.model.LoadingFeed
+import ru.netology.nmedia.model.PostsFeed
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class FeedFragment : Fragment() {
@@ -35,7 +39,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                viewModel.likeById(post)
             }
 
             override fun onRemove(post: Post) {
@@ -54,20 +58,33 @@ class FeedFragment : Fragment() {
                 startActivity(shareIntent)
             }
         })
+
+
+
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner, { state ->
-            adapter.submitList(state.posts)
+            binding.progress.isVisible = false
+            binding.errorGroup.isVisible = false
+            binding.emptyText.isVisible = false
 
-            if (state.internetError){
+
+            when (state) {
+                is PostsFeed -> adapter.submitList(state.posts)
+                is LoadingFeed -> binding.progress.isVisible = true
+                is ErrorFeed -> binding.errorGroup.isVisible = true
+                is EmptyFeed -> binding.emptyText.isVisible = true
+            }
+        })
+
+        viewModel.internetErrorMessage.observe(viewLifecycleOwner, { onError ->
+            if (onError == true) {
                 displayInternetError()
                 binding.errorGroup.isVisible = true
-                Log.e("exec","GOT internetError")
             }
-
-            binding.progress.isVisible = state.loading
-            binding.errorGroup.isVisible = state.error
-            binding.emptyText.isVisible = state.empty
         })
+
+
+
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
@@ -81,9 +98,11 @@ class FeedFragment : Fragment() {
     }
 
 
-    fun displayInternetError(){
-        Toast.makeText(requireContext(),
-            "Connection error. Try again", Toast.LENGTH_SHORT)
+    fun displayInternetError() {
+        Toast.makeText(
+            requireContext(),
+            "Connection error. Try again", Toast.LENGTH_SHORT
+        )
             .show()
     }
 

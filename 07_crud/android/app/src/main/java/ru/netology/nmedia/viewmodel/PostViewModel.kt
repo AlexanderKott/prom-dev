@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModel
+import ru.netology.nmedia.model.*
 import ru.netology.nmedia.repository.BadConnectionException
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
@@ -28,7 +28,7 @@ private val empty = Post(
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     // упрощённый вариант
     private val repository: PostRepository = PostRepositoryImpl()
-    private val _data = MutableLiveData(FeedModel())
+    private val _data = MutableLiveData<FeedModel>()
     val data: LiveData<FeedModel>
         get() = _data
     private val edited = MutableLiveData(empty)
@@ -36,24 +36,32 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+
+    var internetErrorMessage = SingleLiveEvent<Boolean>()
+
+
     init {
         loadPosts()
     }
 
 
     fun loadPosts() {
-        _data.value = FeedModel(loading = true)
+        _data.value = LoadingFeed(true)
 
         repository.getAllAsync(object : PostRepository.Callback<List<Post>> {
             override fun onSuccess(posts: List<Post>) {
-                _data.value = FeedModel(posts = posts, empty = posts.isEmpty())
+                if (posts.isEmpty()) {
+                    _data.value = EmptyFeed(true)
+                } else {
+                    _data.value = PostsFeed(posts)
+                }
             }
 
             override fun onError(e: Exception) {
                 if (e is BadConnectionException) {
-                    _data.value = FeedModel(internetError = true)
+                    internetErrorMessage.value = true
                 } else {
-                    _data.value = FeedModel(error = true)
+                    _data.value = ErrorFeed(true)
                 }
             }
         })
@@ -61,25 +69,24 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun save() {
-
         edited.value?.let {
-
             repository.save(it, object : PostRepository.Callback<Post> {
                 override fun onSuccess(post: Post) {
+                    if (_data.value is PostsFeed) {
+                        if (edited.value?.id != empty.id) {
 
-                    if (edited.value?.id != empty.id) {
-                        _data.postValue(
-                            FeedModel(posts = _data.value?.posts
-                                .orEmpty().map { if (it.id == post.id) post else it })
-                        )
-                    } else {
+                            _data.postValue(
+                                PostsFeed(posts = (_data.value as PostsFeed)?.posts
+                                    .orEmpty().map { if (it.id == post.id) post else it })
+                            )
+                        } else {
 
-                        val temp: ArrayList<Post> = ArrayList(_data.value?.posts)
-                        temp.add(post)
-                        _data.postValue(FeedModel(posts = temp))
+                            val temp: ArrayList<Post> = ArrayList((_data.value as PostsFeed)?.posts)
+                            temp.add(post)
+                            _data.postValue(PostsFeed(posts = temp))
 
+                        }
                     }
-
                     _postCreated.value = Unit
 
 
@@ -88,10 +95,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
                 override fun onError(e: Exception) {
                     if (e is BadConnectionException) {
-                        _data.value = FeedModel(internetError = true)
+                        internetErrorMessage.value = true
                         Log.e("exec", "GOT save internetError")
                     } else {
-                        _data.value = FeedModel(error = true)
+                        _data.value = ErrorFeed(error = true)
                         Log.e("exec", "GOT save error")
                     }
 
@@ -115,51 +122,80 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        //Вопрос преподавателю. Можно ли так делать в данном случае?
-        val newID =
-            _data.value?.posts?.filter { it.id == id }?.map { if (it.likedByMe) -it.id else it.id }
-                ?.get(0) ?: return
 
-
-        repository.likeById(newID, object : PostRepository.Callback<Post> {
-            override fun onSuccess(post: Post) {
-                _data.postValue(
-                    FeedModel(posts = _data.value?.posts
-                        .orEmpty().map { if (it.id == post.id) post else it })
-                )
-            }
-
-            override fun onError(e: Exception) {
-                if (e is BadConnectionException) {
-                    _data.value = FeedModel(internetError = true)
-                } else {
-                    _data.value = FeedModel(error = true)
+    fun likeById(post: Post) {
+        if (post.likedByMe) {
+            repository.dislikeById(post.id, object : PostRepository.Callback<Post> {
+                override fun onSuccess(post: Post) {
+                    if (_data.value is PostsFeed) {
+                        _data.postValue(
+                            PostsFeed(posts = (_data.value as PostsFeed)?.posts
+                                .orEmpty().map { if (it.id == post.id) post else it })
+                        )
+                    }
                 }
-            }
 
-        })
+                override fun onError(e: Exception) {
+                    if (e is BadConnectionException) {
+                        internetErrorMessage.value = true
+                    } else {
+                        _data.value = ErrorFeed(error = true)
+                    }
+                }
+
+            })
+
+        } else {
+
+            repository.likeById(post.id, object : PostRepository.Callback<Post> {
+                override fun onSuccess(post: Post) {
+                    if (_data.value is PostsFeed) {
+                        _data.postValue(
+                            PostsFeed(posts = (_data.value as PostsFeed)?.posts
+                                .orEmpty().map { if (it.id == post.id) post else it })
+                        )
+                    }
+                }
+
+                override fun onError(e: Exception) {
+                    if (e is BadConnectionException) {
+                        internetErrorMessage.value = true
+                    } else {
+                        _data.value = ErrorFeed(error = true)
+                    }
+                }
+
+            })
+
+        }
     }
 
     fun removeById(id: Long) {
-        val old = _data.value?.posts.orEmpty()
+
+        val old = if (_data.value is PostsFeed) {
+            (_data.value as PostsFeed)?.posts.orEmpty()
+        } else {
+            EmptyFeed(true)
+        }
 
         repository.removeById(id, object : PostRepository.Callback<Unit> {
             override fun onSuccess(unit: Unit) {
                 Log.e("exec", "GOT removeById onSuccess")
-                _data.postValue(
-                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                        .filter { it.id != id }
+                if (_data.value is PostsFeed) {
+                    _data.postValue(
+                        (_data.value as PostsFeed)?.copy(posts = (_data.value as PostsFeed)?.posts.orEmpty()
+                            .filter { it.id != id }
+                        )
                     )
-                )
+                }
             }
 
             override fun onError(e: Exception) {
                 Log.e("exec", "GOT removeById onError")
                 if (e is BadConnectionException) {
-                    _data.value = FeedModel(internetError = true)
+                    internetErrorMessage.value = true
                 } else {
-                    _data.value = FeedModel(error = true)
+                    _data.value = ErrorFeed(error = true)
                 }
             }
         })
