@@ -61,12 +61,13 @@ class FeedFragment : Fragment() {
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.error) {
                 binding.retry.isVisible = true
-
+                binding.list.isVisible = false
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             } else {
                 binding.retry.isVisible = false
+                binding.list.isVisible = true
             }
         })
 
