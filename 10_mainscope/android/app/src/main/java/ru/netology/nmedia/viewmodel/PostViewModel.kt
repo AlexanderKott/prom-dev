@@ -87,11 +87,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        TODO()
+    fun likeById(post: Post) {
+        viewModelScope.launch {
+            if (!post.likedByMe) {
+                repository.likeById(post.id)
+            } else {
+                repository.dislikeById(post.id)
+            }
+        }
     }
 
     fun removeById(id: Long) {
-        TODO()
+        viewModelScope.launch {
+            repository.removeById(id)
+        }
     }
 }

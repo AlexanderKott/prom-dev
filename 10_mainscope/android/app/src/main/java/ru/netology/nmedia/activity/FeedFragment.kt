@@ -34,7 +34,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                viewModel.likeById(post)
             }
 
             override fun onRemove(post: Post) {
@@ -54,18 +54,31 @@ class FeedFragment : Fragment() {
             }
         })
         binding.list.adapter = adapter
+
+
         viewModel.dataState.observe(viewLifecycleOwner, { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
             if (state.error) {
+                binding.retry.isVisible = true
+
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
+            } else {
+                binding.retry.isVisible = false
             }
         })
+
+        binding.retry.setOnClickListener {
+            viewModel.loadPosts()
+        }
+
+
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
             binding.emptyText.isVisible = state.empty
+            binding.retry.isVisible = false
         })
 
         binding.swiperefresh.setOnRefreshListener {
