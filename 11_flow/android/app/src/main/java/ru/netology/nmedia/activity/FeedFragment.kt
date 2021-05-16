@@ -2,9 +2,11 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -54,6 +56,8 @@ class FeedFragment : Fragment() {
             }
         })
         binding.list.adapter = adapter
+
+
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
@@ -63,13 +67,34 @@ class FeedFragment : Fragment() {
                     .show()
             }
         }
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
-            binding.emptyText.isVisible = state.empty
+
+        viewModel.newerCount.observe(viewLifecycleOwner) { it ->
+            Log.e("excx",  "it $it ")
         }
-        viewModel.newerCount.observe(viewLifecycleOwner) { state ->
-            // TODO: just log it, interaction must be in homework
-            println(state)
+
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+                binding.emptyText.isVisible = state.empty
+
+                if (adapter.itemCount == 0){
+                    adapter.submitList(state.posts)
+                }
+
+                if  (state.posts.size == adapter.itemCount){
+                  adapter.submitList(state.posts)
+               } else{
+                    binding.newpostsBtn.isGone = false
+                    viewModel.updateNewPostsList(state.posts)
+               }
+        }
+
+        
+        binding.newpostsBtn.setOnClickListener {
+            binding.newpostsBtn.isGone = true
+            adapter.submitList(viewModel.addNewPosts())
+            binding.list.postDelayed(Runnable {
+                binding.list.smoothScrollToPosition(0)
+            }, 700)
+
         }
 
         binding.swiperefresh.setOnRefreshListener {

@@ -32,6 +32,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository =
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
+
+
     val data: LiveData<FeedModel> = repository.data
         .map(::FeedModel)
         .asLiveData(Dispatchers.Default)
@@ -45,6 +47,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             .catch { e -> e.printStackTrace() }
             .asLiveData()
     }
+
+    var newPostsCollection : List<Post>? = null
 
     private val edited = MutableLiveData(empty)
     private val _postCreated = SingleLiveEvent<Unit>()
@@ -108,5 +112,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removeById(id: Long) {
         TODO()
+    }
+
+    fun updateNewPostsList(posts: List<Post>) {
+        newPostsCollection = posts
+    }
+
+    fun addNewPosts() : List<Post>?{
+        return newPostsCollection
     }
 }
