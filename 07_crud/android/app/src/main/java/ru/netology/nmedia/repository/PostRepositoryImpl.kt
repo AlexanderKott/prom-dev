@@ -65,6 +65,7 @@ class PostRepositoryImpl : PostRepository {
         })
     }
 
+ 
     override fun dislikeById(id: Long, callback: PostRepository.Callback<Post>) {
         PostsApi.retrofitService.dislikeById(id).enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
@@ -80,6 +81,7 @@ class PostRepositoryImpl : PostRepository {
             }
         })
 
+ 
     }
 
     override fun likeById(id: Long, callback: PostRepository.Callback<Post>) {

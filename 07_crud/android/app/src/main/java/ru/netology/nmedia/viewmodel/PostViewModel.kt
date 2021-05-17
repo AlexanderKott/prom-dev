@@ -9,7 +9,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.dto.Post
+ 
 import ru.netology.nmedia.model.*
+ 
 import ru.netology.nmedia.repository.BadConnectionException
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
@@ -48,7 +50,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun loadPosts() {
+ 
         _data.value = LoadingFeed(true)
+ 
 
         repository.getAllAsync(object : PostRepository.Callback<List<Post>> {
             override fun onSuccess(posts: List<Post>) {
@@ -61,9 +65,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             override fun onError(e: Exception) {
                 if (e is BadConnectionException) {
+ 
                     internetErrorMessage.value = true
                 } else {
                     _data.value = ErrorFeed(true)
+ 
                 }
             }
         })
@@ -71,9 +77,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun save() {
+
         edited.value?.let {
+
             repository.save(it, object : PostRepository.Callback<Post> {
                 override fun onSuccess(post: Post) {
+ 
                     if (_data.value is PostsFeed) {
                         if (edited.value?.id != empty.id) {
 
@@ -89,6 +98,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
                         }
                     }
+ 
                     _postCreated.value = Unit
 
 
@@ -97,10 +107,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
                 override fun onError(e: Exception) {
                     if (e is BadConnectionException) {
+ 
                         internetErrorMessage.value = true
                         Log.e("exec", "GOT save internetError")
                     } else {
                         _data.value = ErrorFeed(error = true)
+ 
                         Log.e("exec", "GOT save error")
                     }
 
@@ -124,6 +136,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
+ 
 
     fun likeById(post: Post) {
         if (post.likedByMe) {
@@ -179,10 +192,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             EmptyFeed(true)
         }
+ 
 
         repository.removeById(id, object : PostRepository.Callback<Unit> {
             override fun onSuccess(unit: Unit) {
                 Log.e("exec", "GOT removeById onSuccess")
+ 
                 if (_data.value is PostsFeed) {
                     _data.postValue(
                         (_data.value as PostsFeed)?.copy(posts = (_data.value as PostsFeed)?.posts.orEmpty()
@@ -190,14 +205,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                         )
                     )
                 }
+ 
             }
 
             override fun onError(e: Exception) {
                 Log.e("exec", "GOT removeById onError")
                 if (e is BadConnectionException) {
+ 
                     internetErrorMessage.value = true
                 } else {
                     _data.value = ErrorFeed(error = true)
+ 
                 }
             }
         })

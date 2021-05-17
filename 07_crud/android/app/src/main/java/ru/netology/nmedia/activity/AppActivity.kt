@@ -54,5 +54,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
                 .show()
         }
+ 
     }
 }

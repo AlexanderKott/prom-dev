@@ -2,6 +2,7 @@ package ru.netology.nmedia.model
 
 import ru.netology.nmedia.dto.Post
 
+ 
 
 
 sealed class FeedModel
@@ -12,3 +13,4 @@ data  class EmptyFeed (val empty : Boolean) : FeedModel()
 data  class RefreshingFeed (val empty : Boolean) : FeedModel()
 
 
+ 

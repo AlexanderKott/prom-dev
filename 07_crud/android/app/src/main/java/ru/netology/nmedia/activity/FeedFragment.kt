@@ -65,6 +65,7 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
         viewModel.data.observe(viewLifecycleOwner, { state ->
+ 
             binding.progress.isVisible = false
             binding.errorGroup.isVisible = false
             binding.emptyText.isVisible = false
@@ -83,6 +84,7 @@ class FeedFragment : Fragment() {
                 displayInternetError()
                 binding.errorGroup.isVisible = true
             }
+ 
         })
 
 
@@ -100,12 +102,12 @@ class FeedFragment : Fragment() {
     }
 
 
+ 
     fun displayInternetError() {
         Toast.makeText(
             requireContext(),
             "Connection error. Try again", Toast.LENGTH_SHORT
-        )
-            .show()
+        ) .show()
     }
 
 }
