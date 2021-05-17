@@ -56,6 +56,7 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         .catch { e -> throw AppError.from(e) }
         .flowOn(Dispatchers.Default)
 
+
     override suspend fun save(post: Post) {
         try {
             val response = PostsApi.service.save(post)

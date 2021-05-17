@@ -92,28 +92,35 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/like"
+            style="@style/Widget.AppTheme.LikeCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checkable="true"
             android:contentDescription="@string/description_post_like"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/footer"
             app:icon="@drawable/ic_like_24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/attachment"
             tools:checked="@sample/posts.json/data/likedByMe"
-            tools:text="@sample/posts.json/data/likes"
-            style="@style/Widget.AppTheme.LikeCheckBox"
-            />
+            tools:text="@sample/posts.json/data/likes" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/share"
+            style="@style/Widget.AppTheme.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/common_spacing"
             android:contentDescription="@string/description_post_share"
-            app:layout_constraintStart_toEndOf="@+id/like"
-            app:layout_constraintTop_toBottomOf="@id/footer"
             app:icon="@drawable/ic_share_24"
-            style="@style/Widget.AppTheme.IconButton"
-            />
+            app:layout_constraintStart_toEndOf="@+id/like"
+            app:layout_constraintTop_toTopOf="@+id/like" />
+
+        <ImageView
+            android:id="@+id/attachment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@+id/content"
+            app:layout_constraintStart_toStartOf="@+id/content"
+            app:layout_constraintTop_toBottomOf="@+id/content"
+            app:srcCompat="@drawable/ic_camera_24dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
