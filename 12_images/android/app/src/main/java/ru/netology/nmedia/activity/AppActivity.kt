@@ -52,8 +52,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .show()
         }
 
-        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
-            println(it.token)
-        }
+
     }
 }
