@@ -134,19 +134,22 @@ private val client = OkHttpClient.Builder()
 
 
 
+
+
+// ДЗ 2 получение комментов
 fun main() {
-    println("----- authors ------")
+    println("----- main: comments ------")
     with(CoroutineScope(EmptyCoroutineContext)) {
         launch {
             try {
-                val authors = getPosts(client)
-                    .map { post ->
-                        async {
-                            getAuthor(client, post.id)
-                        }
-                    }.awaitAll()
-                println("----- authors ------")
-                println(authors)
+                val comments = getPosts(client)
+                        .map { post ->
+                            async {
+                                getComments(client, post.id)
+                            }
+                        }.awaitAll()
+                println("----- comments list: ------")
+                println(comments)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -156,15 +159,41 @@ fun main() {
 }
 
 
-suspend fun getAuthor(client: OkHttpClient, id: Long): Author {
+
+
+
+//// ДЗ 1 получение авторов
+//fun main() {
+//    println("----- main: authors ------")
+//    with(CoroutineScope(EmptyCoroutineContext)) {
+//        launch {
+//            try {
+//                val authors = getPosts(client)
+//                    .map { post ->
+//                        async {
+//                            getAuthor(client, post.id)
+//                        }
+//                    }.awaitAll()
+//                println("----- authors list: ------")
+//                println(authors)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+//    Thread.sleep(30_000L)
+//}
+
+
+suspend fun getAuthor(client: OkHttpClient, id: Long): Author? {
   return try {
       makeRequest("$BASE_URL/api/authors/$id", client, object : TypeToken<Author>() {})
   } catch (e: Response404){
-      Author(0, "got 404", "got  404")
+      null
   }
 }
 
-
+// стандартная реализация
 //fun main() {
 //    with(CoroutineScope(EmptyCoroutineContext)) {
 //        launch {
