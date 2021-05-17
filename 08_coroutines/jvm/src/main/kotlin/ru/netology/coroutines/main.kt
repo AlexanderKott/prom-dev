@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
+import ru.netology.coroutines.dto.Author
 import ru.netology.coroutines.dto.Comment
 import ru.netology.coroutines.dto.Post
 import ru.netology.coroutines.dto.PostWithComments
@@ -131,17 +132,24 @@ private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
     .build()
 
+
+
+
+
+// ДЗ 2 получение комментов
 fun main() {
+    println("----- main: comments ------")
     with(CoroutineScope(EmptyCoroutineContext)) {
         launch {
             try {
-                val posts = getPosts(client)
-                    .map { post ->
-                        async {
-                            PostWithComments(post, getComments(client, post.id))
-                        }
-                    }.awaitAll()
-                println(posts)
+                val comments = getPosts(client)
+                        .map { post ->
+                            async {
+                                getComments(client, post.id)
+                            }
+                        }.awaitAll()
+                println("----- comments list: ------")
+                println(comments)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -149,6 +157,65 @@ fun main() {
     }
     Thread.sleep(30_000L)
 }
+
+
+
+
+
+//// ДЗ 1 получение авторов
+//fun main() {
+//    println("----- main: authors ------")
+//    with(CoroutineScope(EmptyCoroutineContext)) {
+//        launch {
+//            try {
+//                val authors = getPosts(client)
+//                    .map { post ->
+//                        async {
+//                            getAuthor(client, post.id)
+//                        }
+//                    }.awaitAll()
+//                println("----- authors list: ------")
+//                println(authors)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+//    Thread.sleep(30_000L)
+//}
+
+
+suspend fun getAuthor(client: OkHttpClient, id: Long): Author? {
+  return try {
+      makeRequest("$BASE_URL/api/authors/$id", client, object : TypeToken<Author>() {})
+  } catch (e: Response404){
+      null
+  }
+}
+
+// стандартная реализация
+//fun main() {
+//    with(CoroutineScope(EmptyCoroutineContext)) {
+//        launch {
+//            try {
+//                val posts = getPosts(client)
+//                    .map { post ->
+//                        println(post)
+//                        async {
+//                            PostWithComments(post, getComments(client, post.id))
+//                        }
+//                    }.awaitAll()
+//                println(posts)
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+//    Thread.sleep(30_000L)
+//}
+
+
+
 
 suspend fun OkHttpClient.apiCall(url: String): Response {
     return suspendCoroutine { continuation ->
@@ -168,12 +235,19 @@ suspend fun OkHttpClient.apiCall(url: String): Response {
     }
 }
 
+
+
+
 suspend fun <T> makeRequest(url: String, client: OkHttpClient, typeToken: TypeToken<T>): T =
     withContext(Dispatchers.IO) {
         client.apiCall(url)
             .let { response ->
                 if (!response.isSuccessful) {
                     response.close()
+                    if (response.code == 404){
+                        throw Response404("got 404")
+
+                    }
                     throw RuntimeException(response.message)
                 }
                 val body = response.body ?: throw RuntimeException("response body is null")
@@ -186,3 +260,8 @@ suspend fun getPosts(client: OkHttpClient): List<Post> =
 
 suspend fun getComments(client: OkHttpClient, id: Long): List<Comment> =
     makeRequest("$BASE_URL/api/slow/posts/$id/comments", client, object : TypeToken<List<Comment>>() {})
+
+
+
+class Response404(message:String): Exception(message)
+

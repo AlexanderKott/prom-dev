@@ -1,5 +1,7 @@
 package ru.netology.nmedia.activity
 
+
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -52,9 +54,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
                 .show()
         }
-//
-//        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
-//            println(it.token)
-//        }
+ 
     }
 }
