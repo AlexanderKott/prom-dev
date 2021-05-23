@@ -38,17 +38,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PostRepository =
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
+    /**
+     * пометить все полученные посты айдишником юзера который выдал ему
+     * сервер чтобы юзер знал какие  посты его а какие нет (флаг ownedByMe)
+     *
+     * после этого ресайклер подпишется на эти посты
+     */
     val data: LiveData<FeedModel> = AppAuth.getInstance()
-        .authStateFlow
-        .flatMapLatest { (myId, _) ->
+        .authStateFlow  //получить поток (потоков?)
+        .flatMapLatest { (myId, _) ->  //из всех данных потока игнорить все кроме самых последних из него
             repository.data
                 .map { posts ->
                     FeedModel(
-                        posts.map { it.copy(ownedByMe = it.authorId == myId) },
+                        posts.map { it.copy(ownedByMe = it.authorId == myId) }, //пометить ими посты
                         posts.isEmpty()
                     )
                 }
         }.asLiveData(Dispatchers.Default)
+
+
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
@@ -131,10 +139,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-        TODO()
     }
 
     fun removeById(id: Long) {
-        TODO()
     }
 }

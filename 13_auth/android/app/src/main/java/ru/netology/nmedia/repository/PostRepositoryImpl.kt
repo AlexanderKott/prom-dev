@@ -73,11 +73,9 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
     }
 
     override suspend fun removeById(id: Long) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun likeById(id: Long) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun saveWithAttachment(post: Post, upload: MediaUpload) {

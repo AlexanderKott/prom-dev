@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.iid.FirebaseInstanceId
@@ -43,6 +44,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         }
 
         viewModel.data.observe(this) {
+            //инвалидировать меню если что-то меняется чтобы оно было перересованно
             invalidateOptionsMenu()
         }
 
@@ -51,9 +53,13 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
-
+        //Показывать пунты меню в зависимости от того идентифицированы ли
+        //мы на сервере
         menu?.let {
+            //регистрация и логин для
             it.setGroupVisible(R.id.unauthenticated, !viewModel.authenticated)
+
+            //лог аут (для идентицированых)
             it.setGroupVisible(R.id.authenticated, viewModel.authenticated)
         }
         return true
@@ -62,17 +68,18 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.signin -> {
-                // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                findNavController(R.id.nav_host_fragment).navigate(R.id.action_feedFragment_to_loginFragment)
                 true
             }
             R.id.signup -> {
-                // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+
+                Toast.makeText(this, "Зарегаться пока нельзя", Toast.LENGTH_SHORT)
+                    .show()
                 true
             }
             R.id.signout -> {
-                // TODO: just hardcode it, implementation must be in homework
+                Toast.makeText(this, "Вы вышли", Toast.LENGTH_SHORT)
+                    .show()
                 AppAuth.getInstance().removeAuth()
                 true
             }
@@ -94,8 +101,5 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .show()
         }
 
-        FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
-            println(it.token)
-        }
     }
 }
