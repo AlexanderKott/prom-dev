@@ -72,6 +72,23 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         }
     }
 
+    suspend fun sendToken(token: String) {
+        try {
+            val response = Api.service.saveToken(PushToken(token))
+
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+           // val body = response.body() ?: throw ApiError(response.code(), response.message())
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+
     override suspend fun removeById(id: Long) {
         TODO("Not yet implemented")
     }

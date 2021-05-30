@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -48,6 +49,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             invalidateOptionsMenu()
         }
 
+
         FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
@@ -55,8 +57,13 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             }
 
             val token = task.result
-            println(token)
+            if (token != null) {
+                Log.e("tokenn id: " , token)
+            }
         }
+
+
+
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -65,7 +72,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             }
 
             val token = task.result
-            println(token)
+
+            if (token != null) {
+                Log.e("tokenn token: " , token)
+            }
         }
 
         checkGoogleApiAvailability()
