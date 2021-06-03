@@ -1,6 +1,7 @@
 package ru.netology.nmedia.repository
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.lifecycle.*
@@ -138,12 +139,34 @@ class PostRepositoryImpl(
 
     override suspend fun processWork(id: Long) {
         try {
-            // TODO: handle this in homework
-            val entity = postWorkDao.getById(id)
+            // HOMEWORK
+            Log.e("exc", "i am in processWork id=  ${ id}")
+            val entity = postWorkDao.getById(id) ?: throw ru.netology.nmedia.error.DbError
+            Log.e("exc", "i am in processWork next  entity= ${entity}")
             if (entity.uri != null) {
                 val upload = MediaUpload(Uri.parse(entity.uri).toFile())
+
+                val post = Post(
+                    id = entity.id,
+                    authorId = entity.authorId,
+                    content = entity.content,
+                    likedByMe = entity.likedByMe,
+                    authorAvatar = entity.authorAvatar,
+                    ownedByMe = true,
+                    likes = entity.likes,
+                    author = entity.author,
+                    published = entity.published
+                )
+
+
+                Log.e("exc", "i am in processWork next  saveWithAttachment")
+                saveWithAttachment(post, upload)
+
+              //  postWorkDao.removeById(id)
+                Log.e("exc", "processWork DONE")
+
             }
-            println(entity.id)
+            ///////////////////////////////////////
         } catch (e: Exception) {
             throw UnknownError
         }

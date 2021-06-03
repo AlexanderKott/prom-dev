@@ -9,11 +9,7 @@ import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 
-/**
- * Это переодичный воркер, андроид ос сам его заускает когда приходит время
- * выставленное при его инициализации
- */
-class SavePostWorker(
+class RemovePostWorker (
     applicationContext: Context,
     params: WorkerParameters
 ) : CoroutineWorker(applicationContext, params) {
@@ -21,31 +17,32 @@ class SavePostWorker(
         const val postKey = "post"
     }
 
-    ///Это класс воркера, овверайдим doWork  который выполняет рабоу в фоне
     override suspend fun doWork(): Result {
-        //Получаем входные данные (могут быть тольк оримитивы и стринг)
         val id = inputData.getLong(postKey, 0L)
         if (id == 0L) {
-            return Result.failure() //если воркер не получил данных то он возвращает фейл и выходит
+            return Result.failure()
         }
-        //Иницализируем ДБ с двумя таблицами
+
+        val dbpw = AppDb.getInstance(context = applicationContext).postWorkDao()
         val repository: PostRepository =
             PostRepositoryImpl(
                 AppDb.getInstance(context = applicationContext).postDao(),
-                AppDb.getInstance(context = applicationContext).postWorkDao(),
+                dbpw ,
             )
         return try {
-            Log.e("exc", "WORKER doWork for ${id}")
-            repository.processWork(id)
-            Log.e("exc", "WORKER DONE")
+            Log.e("exc", "R WORKER doWork for ${id}")
+            repository.removeById(id)
+            Log.e("exc", "R WORKER DONE")
+            dbpw.removeById(id)
             Result.success()
 
         } catch (e: Exception) {
+            Log.e("exc", "R WORKER Exception!!")
             Result.retry()
         } catch (e: UnknownError) {
+            Log.e("exc", "R WORKER failure")
             Result.failure()
         }
-
-
     }
+
 }

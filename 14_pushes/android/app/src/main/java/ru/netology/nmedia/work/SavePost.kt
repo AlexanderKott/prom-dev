@@ -29,20 +29,24 @@ class SavePostWorker(
             return Result.failure() //если воркер не получил данных то он возвращает фейл и выходит
         }
         //Иницализируем ДБ с двумя таблицами
+        val dbpw = AppDb.getInstance(context = applicationContext).postWorkDao()
         val repository: PostRepository =
             PostRepositoryImpl(
                 AppDb.getInstance(context = applicationContext).postDao(),
-                AppDb.getInstance(context = applicationContext).postWorkDao(),
+                dbpw ,
             )
         return try {
             Log.e("exc", "WORKER doWork for ${id}")
             repository.processWork(id)
             Log.e("exc", "WORKER DONE")
+            dbpw.removeById(id)
             Result.success()
 
         } catch (e: Exception) {
+            Log.e("exc", "WORKER Exception!!")
             Result.retry()
         } catch (e: UnknownError) {
+            Log.e("exc", "WORKER failure")
             Result.failure()
         }
 

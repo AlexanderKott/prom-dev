@@ -25,13 +25,17 @@ class NMediaApplication : Application() {
     }
 
     private fun setupWork() {
+
+        //Здесь мы иницаилизируем класс воркера, заставляя его запускаться каждую минуту
         appScope.launch {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
+                .build()                            //тут класс его указываем
             val request = PeriodicWorkRequestBuilder<RefreshPostsWorker>(1, TimeUnit.MINUTES)
                 .setConstraints(constraints)
                 .build()
+
+            //запускаем!
             WorkManager.getInstance(this@NMediaApplication).enqueueUniquePeriodicWork(
                 RefreshPostsWorker.name,
                 ExistingPeriodicWorkPolicy.KEEP,

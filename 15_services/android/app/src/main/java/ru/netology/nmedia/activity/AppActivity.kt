@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -47,7 +48,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             invalidateOptionsMenu()
         }
 
-        FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
+     /*   FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -65,7 +66,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
             val token = task.result
             println(token)
-        }
+        }*/
 
         checkGoogleApiAvailability()
     }
@@ -85,6 +86,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             R.id.signin -> {
                 // TODO: just hardcode it, implementation must be in homework
                 AppAuth.getInstance().setAuth(5, "x-token")
+                Log.e("exc", "signin")
                 true
             }
             R.id.signup -> {

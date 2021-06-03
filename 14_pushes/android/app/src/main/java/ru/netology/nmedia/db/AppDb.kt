@@ -7,12 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import ru.netology.nmedia.dao.Converters
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.PostWorkDao
 import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.PostWorkEntity
 
-@Database(entities = [PostEntity::class], version = 1, exportSchema = false)
+@Database(entities = [PostEntity::class, PostWorkEntity::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun postDao(): PostDao
+    abstract fun postWorkDao(): PostWorkDao
 
     companion object {
         @Volatile
@@ -26,6 +29,7 @@ abstract class AppDb : RoomDatabase() {
 
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, AppDb::class.java, "app.db")
+                .fallbackToDestructiveMigration()
                 .build()
     }
 }
