@@ -21,10 +21,24 @@ import ru.netology.nmedia.viewmodel.AuthViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AppActivity : AppCompatActivity(R.layout.activity_app) {
+class AppActivity: AppCompatActivity (R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
+    private lateinit var fb: FirebaseInstallations
+    private lateinit var fbm: FirebaseMessaging
 
-    //@Inject lateinit var appAuth : AppAuth
+    @Inject lateinit var appAuth : AppAuth
+    @Inject lateinit var gava: GoogleApiAvailability
+
+    @Inject
+    fun setFirebaseInstallations(f: FirebaseInstallations){
+        fb = f
+    }
+
+    @Inject
+    fun setFirebaseMessaging(f: FirebaseMessaging){
+        fbm = f
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +67,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             invalidateOptionsMenu()
         }
 
-       FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
+
+        fb.id.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -63,7 +78,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             println(token)
         }
 
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+
+        fbm.token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -92,26 +108,27 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         return when (item.itemId) {
             R.id.signin -> {
                 // TODO: just hardcode it, implementation must be in homework
-                //appAuth.setAuth(5, "x-token")
+                appAuth.setAuth(5, "x-token")
                 Log.e("exc", "signin")
                 true
             }
             R.id.signup -> {
                 // TODO: just hardcode it, implementation must be in homework
-                //appAuth.setAuth(5, "x-token")
+                appAuth.setAuth(5, "x-token")
                 true
             }
             R.id.signout -> {
                 // TODO: just hardcode it, implementation must be in homework
-                //appAuth.removeAuth()
+                appAuth.removeAuth()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(gava) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with

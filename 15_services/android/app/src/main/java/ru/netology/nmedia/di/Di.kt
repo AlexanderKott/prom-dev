@@ -2,6 +2,9 @@ package ru.netology.nmedia.di
 
 import android.content.Context
 import androidx.work.WorkManager
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.firebase.installations.FirebaseInstallations
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,19 +31,9 @@ import javax.inject.Singleton
 @InstallIn(ViewModelComponent::class)
 internal object ModuleForViewModel{
 
-    @ViewModelScoped
-    @Provides
-    fun getPostRepository(db: AppDb, api: ApiService): PostRepository =
-        PostRepositoryImpl(db.postDao(), db.postWorkDao(), api)
-
-    @Provides
-    fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
-
     @Provides
     fun getWorkManager(@ApplicationContext context: Context): WorkManager =
      WorkManager.getInstance(context)
-
-
 
 }
 
@@ -50,7 +43,28 @@ internal object ModuleForSingleton {
 
     private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 
-     @Provides
+    @Singleton
+    @Provides
+    fun getGoogleApiAvailability() = GoogleApiAvailability.getInstance()
+
+    @Singleton
+    @Provides
+    fun getFirebaseInstallations() = FirebaseInstallations.getInstance()
+
+    @Singleton
+    @Provides
+    fun getFirebaseMessaging() =  FirebaseMessaging.getInstance()
+
+    @Singleton
+    @Provides
+    fun getPostRepository(db: AppDb, api: ApiService): PostRepository =
+        PostRepositoryImpl(db.postDao(), db.postWorkDao(), api)
+
+    @Provides
+    fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
+
+
+    @Provides
     fun getAppAuth(@ApplicationContext context : Context): AppAuth {
         AppAuth.initApp(context)
        return AppAuth.getInstance1()
