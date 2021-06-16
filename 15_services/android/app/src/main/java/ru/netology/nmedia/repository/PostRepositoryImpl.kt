@@ -28,6 +28,7 @@ import java.io.IOException
 class PostRepositoryImpl(
     private val postDao: PostDao,
     private val postWorkDao: PostWorkDao,
+    private val api: ApiService
 ) : PostRepository {
     override val data = postDao.getAll()
         .map(List<PostEntity>::toDto)
@@ -35,7 +36,7 @@ class PostRepositoryImpl(
 
     override suspend fun getAll() {
         try {
-            val response = Api.service.getAll()
+            val response = api.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -52,7 +53,7 @@ class PostRepositoryImpl(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
-            val response = Api.service.getNewer(id)
+            val response = api.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -67,7 +68,7 @@ class PostRepositoryImpl(
 
     override suspend fun save(post: Post) {
         try {
-            val response = Api.service.save(post)
+            val response = api.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -111,7 +112,7 @@ class PostRepositoryImpl(
                 "file", upload.file.name, upload.file.asRequestBody()
             )
 
-            val response = Api.service.upload(media)
+            val response = api.upload(media)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }

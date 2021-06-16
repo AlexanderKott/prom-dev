@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.repository.PostRepository
@@ -13,9 +15,10 @@ import ru.netology.nmedia.repository.PostRepositoryImpl
  * Это переодичный воркер, андроид ос сам его заускает когда приходит время
  * выставленное при его инициализации
  */
-class SavePostWorker(
-    applicationContext: Context,
-    params: WorkerParameters
+class SavePostWorker  @AssistedInject constructor(
+    @Assisted  applicationContext: Context,
+    @Assisted  params: WorkerParameters,
+    var repository: PostRepository
 ) : CoroutineWorker(applicationContext, params) {
     companion object {
         const val postKey = "post"
@@ -28,12 +31,7 @@ class SavePostWorker(
         if (id == 0L) {
             return Result.failure() //если воркер не получил данных то он возвращает фейл и выходит
         }
-        //Иницализируем ДБ с двумя таблицами
-        val repository: PostRepository =
-            PostRepositoryImpl(
-                AppDb.getInstance(context = applicationContext).postDao(),
-                AppDb.getInstance(context = applicationContext).postWorkDao(),
-            )
+
         return try {
             Log.e("exc", "WORKER doWork for ${id}")
             repository.processWork(id)

@@ -1,10 +1,12 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.lifecycle.*
 import androidx.work.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -21,6 +23,7 @@ import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.work.SavePostWorker
+import javax.inject.Inject
 
 private val empty = Post(
     id = 0,
@@ -35,18 +38,16 @@ private val empty = Post(
 
 private val noPhoto = PhotoModel()
 
+//Это вьюмодел заинжекчена без конструктора. даггер сам ее создает
+@HiltViewModel
 @ExperimentalCoroutinesApi
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    // упрощённый вариант
-    private val repository: PostRepository =
-        PostRepositoryImpl(
-            AppDb.getInstance(context = application).postDao(),
-            AppDb.getInstance(context = application).postWorkDao(),
-        )
-    private val workManager: WorkManager =
-        WorkManager.getInstance(application)
+class PostViewModel @Inject constructor() : ViewModel() {
 
-    val data: LiveData<FeedModel> = AppAuth.getInstance()
+     @Inject lateinit var repository: PostRepository
+     @Inject lateinit var workManager: WorkManager
+     @Inject lateinit var auth: AppAuth
+
+    val data: LiveData<FeedModel> = auth
         .authStateFlow
         .flatMapLatest { (myId, _) ->
             repository.data
