@@ -2,11 +2,9 @@ package ru.netology.nmedia.di
 
 import android.content.Context
 import androidx.work.WorkManager
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ViewModelScoped
@@ -26,10 +24,9 @@ import javax.inject.Singleton
 
 
 
-
 @Module
 @InstallIn(ViewModelComponent::class)
-internal object GiveYouEverything {
+internal object ModuleForViewModel{
 
     @ViewModelScoped
     @Provides
@@ -49,9 +46,9 @@ internal object GiveYouEverything {
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal object GiveYouEverything2 {
-    private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
+internal object ModuleForSingleton {
 
+    private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 
      @Provides
     fun getAppAuth(@ApplicationContext context : Context): AppAuth {

@@ -10,8 +10,7 @@ import ru.netology.nmedia.auth.AuthState
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthViewModel @Inject constructor() : ViewModel() {
-    @Inject lateinit var auth: AppAuth
+class AuthViewModel @Inject constructor(var auth: AppAuth) : ViewModel() {
 
     val data: LiveData<AuthState> = auth
         .authStateFlow

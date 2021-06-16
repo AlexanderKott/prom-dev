@@ -41,11 +41,10 @@ private val noPhoto = PhotoModel()
 //Это вьюмодел заинжекчена без конструктора. даггер сам ее создает
 @HiltViewModel
 @ExperimentalCoroutinesApi
-class PostViewModel @Inject constructor() : ViewModel() {
-
-     @Inject lateinit var repository: PostRepository
-     @Inject lateinit var workManager: WorkManager
-     @Inject lateinit var auth: AppAuth
+class PostViewModel @Inject constructor(var repository: PostRepository,
+                                        var workManager: WorkManager,
+                                        var auth: AppAuth
+) : ViewModel() {
 
     val data: LiveData<FeedModel> = auth
         .authStateFlow

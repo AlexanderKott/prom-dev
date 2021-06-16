@@ -53,7 +53,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             invalidateOptionsMenu()
         }
 
-     /*   FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
+       FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -71,7 +71,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
             val token = task.result
             println(token)
-        }*/
+        }
 
         checkGoogleApiAvailability()
     }

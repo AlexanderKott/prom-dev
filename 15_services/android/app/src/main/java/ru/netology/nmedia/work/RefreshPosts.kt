@@ -1,6 +1,7 @@
 package ru.netology.nmedia.work
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
@@ -11,6 +12,7 @@ import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 
+@HiltWorker
 class RefreshPostsWorker @AssistedInject constructor(
     @Assisted  applicationContext: Context,
     @Assisted  params: WorkerParameters,

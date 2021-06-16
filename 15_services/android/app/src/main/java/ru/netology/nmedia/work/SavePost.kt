@@ -2,6 +2,7 @@ package ru.netology.nmedia.work
 
 import android.content.Context
 import android.util.Log
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
@@ -15,6 +16,7 @@ import ru.netology.nmedia.repository.PostRepositoryImpl
  * Это переодичный воркер, андроид ос сам его заускает когда приходит время
  * выставленное при его инициализации
  */
+@HiltWorker
 class SavePostWorker  @AssistedInject constructor(
     @Assisted  applicationContext: Context,
     @Assisted  params: WorkerParameters,
