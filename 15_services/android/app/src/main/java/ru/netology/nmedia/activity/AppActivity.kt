@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -12,13 +13,32 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
-class AppActivity : AppCompatActivity(R.layout.activity_app) {
+@AndroidEntryPoint
+class AppActivity: AppCompatActivity (R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
+    private lateinit var fb: FirebaseInstallations
+    private lateinit var fbm: FirebaseMessaging
+
+    @Inject lateinit var appAuth : AppAuth
+    @Inject lateinit var gava: GoogleApiAvailability
+
+    @Inject
+    fun setFirebaseInstallations(f: FirebaseInstallations){
+        fb = f
+    }
+
+    @Inject
+    fun setFirebaseMessaging(f: FirebaseMessaging){
+        fbm = f
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +67,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             invalidateOptionsMenu()
         }
 
-        FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
+
+        fb.id.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -57,7 +78,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             println(token)
         }
 
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+
+        fbm.token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 println("some stuff happened: ${task.exception}")
                 return@addOnCompleteListener
@@ -80,29 +102,33 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         return true
     }
 
+
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.signin -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                appAuth.setAuth(5, "x-token")
+                Log.e("exc", "signin")
                 true
             }
             R.id.signup -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().setAuth(5, "x-token")
+                appAuth.setAuth(5, "x-token")
                 true
             }
             R.id.signout -> {
                 // TODO: just hardcode it, implementation must be in homework
-                AppAuth.getInstance().removeAuth()
+                appAuth.removeAuth()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(gava) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with

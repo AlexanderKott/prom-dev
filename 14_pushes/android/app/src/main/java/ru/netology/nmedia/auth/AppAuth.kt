@@ -64,7 +64,7 @@ class AppAuth private constructor(context: Context) {
         CoroutineScope(Dispatchers.Default).launch {
             try {
                 val pushToken = PushToken(token ?: Firebase.messaging.token.await())
-                Api.service.save(pushToken)
+                Api.service.saveToken(pushToken)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -90,3 +90,4 @@ class AppAuth private constructor(context: Context) {
 }
 
 data class AuthState(val id: Long = 0, val token: String? = null)
+data class RecipientInfo(val recipientId: String, val content: String )

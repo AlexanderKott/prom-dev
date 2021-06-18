@@ -8,12 +8,15 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
+import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 
-class FCMService : FirebaseMessagingService() {
+class FCMService @Inject constructor(var authp : AppAuth) : FirebaseMessagingService() {
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
 
     override fun onCreate() {
         super.onCreate()
@@ -34,7 +37,9 @@ class FCMService : FirebaseMessagingService() {
         println(message.data["content"])
     }
 
+
+
     override fun onNewToken(token: String) {
-        AppAuth.getInstance().sendPushToken(token)
+        authp.sendPushToken(token)
     }
 }

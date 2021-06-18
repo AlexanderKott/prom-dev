@@ -2,11 +2,8 @@ package ru.netology.nmedia.work
 
 import android.content.Context
 import android.util.Log
-import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.error.UnknownError
 import ru.netology.nmedia.repository.PostRepository
@@ -16,11 +13,9 @@ import ru.netology.nmedia.repository.PostRepositoryImpl
  * Это переодичный воркер, андроид ос сам его заускает когда приходит время
  * выставленное при его инициализации
  */
-@HiltWorker
-class SavePostWorker  @AssistedInject constructor(
-    @Assisted  applicationContext: Context,
-    @Assisted  params: WorkerParameters,
-    var repository: PostRepository
+class SavePostWorker(
+    applicationContext: Context,
+    params: WorkerParameters
 ) : CoroutineWorker(applicationContext, params) {
     companion object {
         const val postKey = "post"
@@ -33,16 +28,25 @@ class SavePostWorker  @AssistedInject constructor(
         if (id == 0L) {
             return Result.failure() //если воркер не получил данных то он возвращает фейл и выходит
         }
-
+        //Иницализируем ДБ с двумя таблицами
+        val dbpw = AppDb.getInstance(context = applicationContext).postWorkDao()
+        val repository: PostRepository =
+            PostRepositoryImpl(
+                AppDb.getInstance(context = applicationContext).postDao(),
+                dbpw ,
+            )
         return try {
             Log.e("exc", "WORKER doWork for ${id}")
             repository.processWork(id)
             Log.e("exc", "WORKER DONE")
+            dbpw.removeById(id)
             Result.success()
 
         } catch (e: Exception) {
+            Log.e("exc", "WORKER Exception!!")
             Result.retry()
         } catch (e: UnknownError) {
+            Log.e("exc", "WORKER failure")
             Result.failure()
         }
 

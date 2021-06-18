@@ -1,6 +1,7 @@
 package ru.netology.nmedia.repository
 
 import android.net.Uri
+import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.lifecycle.*
@@ -27,6 +28,7 @@ import java.io.IOException
 class PostRepositoryImpl(
     private val postDao: PostDao,
     private val postWorkDao: PostWorkDao,
+    private val api: ApiService
 ) : PostRepository {
     override val data = postDao.getAll()
         .map(List<PostEntity>::toDto)
@@ -34,7 +36,7 @@ class PostRepositoryImpl(
 
     override suspend fun getAll() {
         try {
-            val response = Api.service.getAll()
+            val response = api.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -51,7 +53,7 @@ class PostRepositoryImpl(
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(120_000L)
-            val response = Api.service.getNewer(id)
+            val response = api.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -66,7 +68,7 @@ class PostRepositoryImpl(
 
     override suspend fun save(post: Post) {
         try {
-            val response = Api.service.save(post)
+            val response = api.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -110,7 +112,7 @@ class PostRepositoryImpl(
                 "file", upload.file.name, upload.file.asRequestBody()
             )
 
-            val response = Api.service.upload(media)
+            val response = api.upload(media)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -138,12 +140,34 @@ class PostRepositoryImpl(
 
     override suspend fun processWork(id: Long) {
         try {
-            // TODO: handle this in homework
-            val entity = postWorkDao.getById(id)
+            // HOMEWORK
+            Log.e("exc", "i am in processWork id=  ${ id}")
+            val entity = postWorkDao.getById(id) ?: throw ru.netology.nmedia.error.DbError
+            Log.e("exc", "i am in processWork next  entity= ${entity}")
             if (entity.uri != null) {
                 val upload = MediaUpload(Uri.parse(entity.uri).toFile())
+
+                val post = Post(
+                    id = entity.id,
+                    authorId = entity.authorId,
+                    content = entity.content,
+                    likedByMe = entity.likedByMe,
+                    authorAvatar = entity.authorAvatar,
+                    ownedByMe = true,
+                    likes = entity.likes,
+                    author = entity.author,
+                    published = entity.published
+                )
+
+
+                Log.e("exc", "i am in processWork next  saveWithAttachment")
+                saveWithAttachment(post, upload)
+
+              //  postWorkDao.removeById(id)
+                Log.e("exc", "processWork DONE")
+
             }
-            println(entity.id)
+            ///////////////////////////////////////
         } catch (e: Exception) {
             throw UnknownError
         }
