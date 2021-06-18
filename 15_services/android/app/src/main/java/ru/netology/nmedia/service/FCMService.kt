@@ -12,12 +12,11 @@ import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
 import javax.inject.Inject
 
-class FCMService : FirebaseMessagingService() {
+class FCMService @Inject constructor(var authp : AppAuth) : FirebaseMessagingService() {
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
 
-    private lateinit var authp : AppAuth
 
     override fun onCreate() {
         super.onCreate()
@@ -39,12 +38,6 @@ class FCMService : FirebaseMessagingService() {
     }
 
 
-
-
-    @Inject
-    fun initApi(appAuth: AppAuth){
-        authp = appAuth
-    }
 
     override fun onNewToken(token: String) {
         authp.sendPushToken(token)
