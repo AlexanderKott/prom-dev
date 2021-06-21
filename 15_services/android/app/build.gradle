@@ -75,7 +75,9 @@ dependencies {
     def imagepicker_version = "1.8"
     def workmanager_version = "2.5.0"
     def work_version = "2.5.0"
+    def paging_version = "3.0.0"
 
+    implementation("androidx.paging:paging-runtime-ktx:$paging_version")
     implementation("com.google.dagger:hilt-android:$hilt_version")
     kapt("com.google.dagger:hilt-android-compiler:$hilt_version")
     implementation("androidx.work:work-runtime-ktx:$work_version")

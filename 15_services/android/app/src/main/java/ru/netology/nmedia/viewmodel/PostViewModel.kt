@@ -5,10 +5,14 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.lifecycle.*
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -46,17 +50,14 @@ class PostViewModel @Inject constructor(var repository: PostRepository,
                                         var auth: AppAuth
 ) : ViewModel() {
 
-    val data: LiveData<FeedModel> = auth
-        .authStateFlow
+    val cached = repository.data.cachedIn(viewModelScope)
+
+    val data: Flow<PagingData<Post>> = auth.authStateFlow
         .flatMapLatest { (myId, _) ->
-            repository.data
-                .map { posts ->
-                    FeedModel(
-                        posts.map { it.copy(ownedByMe = it.authorId == myId) },
-                        posts.isEmpty()
-                    )
+            cached.map { posts ->
+                        posts.map { it.copy(ownedByMe = it.authorId == myId) }
                 }
-        }.asLiveData(Dispatchers.Default)
+        }
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
