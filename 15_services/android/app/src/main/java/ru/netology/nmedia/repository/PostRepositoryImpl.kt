@@ -37,9 +37,12 @@ class PostRepositoryImpl(
     override val data = Pager(
         config = PagingConfig( pageSize = 10),
         pagingSourceFactory = { PostPagingSource(api) }
-    ).flow
+    ).
+    flow
 
     override suspend fun getAll() {
+
+
         try {
             val response = api.getAll()
             if (!response.isSuccessful) {
