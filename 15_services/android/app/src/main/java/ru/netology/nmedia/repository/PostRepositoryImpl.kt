@@ -5,9 +5,7 @@ import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.lifecycle.*
-import androidx.paging.DataSource
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
+import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -16,10 +14,10 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.*
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostWorkDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.*
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.PostWorkEntity
-import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.error.ApiError
@@ -29,20 +27,20 @@ import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
 
 class PostRepositoryImpl(
-    private val postDao: PostDao,
-    private val postWorkDao: PostWorkDao,
+    private val base: AppDb,
     private val api: ApiService
 ) : PostRepository {
 
-    override val data = Pager(
-        config = PagingConfig( pageSize = 10),
-        pagingSourceFactory = { PostPagingSource(api) }
-    ).
-    flow
+    @ExperimentalPagingApi
+    override val data: Flow<PagingData<Post>> = Pager(
+        remoteMediator = PostRemoteMediator (api, base),
+        config = PagingConfig( pageSize = 5 ,enablePlaceholders = false),
+        pagingSourceFactory =  base.postDao()::getAll
+    ).flow.map {
+        it.map(PostEntity::toDto)
+    }
 
     override suspend fun getAll() {
-
-
         try {
             val response = api.getAll()
             if (!response.isSuccessful) {
@@ -50,7 +48,7 @@ class PostRepositoryImpl(
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity())
+            base.postDao().insert(body.toEntity())
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -67,7 +65,7 @@ class PostRepositoryImpl(
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity())
+            base.postDao().insert(body.toEntity())
             emit(body.size)
         }
     }
@@ -82,7 +80,7 @@ class PostRepositoryImpl(
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(PostEntity.fromDto(body))
+            base.postDao().insert(PostEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
         } catch (e: Exception) {
@@ -140,7 +138,7 @@ class PostRepositoryImpl(
                     this.uri = upload.file.toUri().toString()
                 }
             }
-            return postWorkDao.insert(entity)
+            return base.postWorkDao().insert(entity)
         } catch (e: Exception) {
             throw UnknownError
         }
@@ -150,7 +148,7 @@ class PostRepositoryImpl(
         try {
             // HOMEWORK
             Log.e("exc", "i am in processWork id=  ${ id}")
-            val entity = postWorkDao.getById(id) ?: throw ru.netology.nmedia.error.DbError
+            val entity = base.postWorkDao().getById(id) ?: throw ru.netology.nmedia.error.DbError
             Log.e("exc", "i am in processWork next  entity= ${entity}")
             if (entity.uri != null) {
                 val upload = MediaUpload(Uri.parse(entity.uri).toFile())
