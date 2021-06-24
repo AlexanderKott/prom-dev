@@ -58,7 +58,7 @@ internal object ModuleForSingleton {
     @Singleton
     @Provides
     fun getPostRepository(db: AppDb, api: ApiService): PostRepository =
-        PostRepositoryImpl(db.postDao(), db.postWorkDao(), api)
+        PostRepositoryImpl(db, api)
 
     @Provides
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
