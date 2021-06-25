@@ -8,7 +8,14 @@ kapt {
     correctErrorTypes true
 }
 
+
+
 android {
+    kotlinOptions {
+        jvmTarget = '1.8'
+        noStdlib = true
+    }
+
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
 
@@ -119,3 +126,9 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$ext_junit_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_core_version"
 }
+
+ 
+
+
+
+
