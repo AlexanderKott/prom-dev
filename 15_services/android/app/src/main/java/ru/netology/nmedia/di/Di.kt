@@ -1,6 +1,7 @@
 package ru.netology.nmedia.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.work.WorkManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
@@ -64,10 +65,10 @@ internal object ModuleForSingleton {
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
 
 
+    @Singleton
     @Provides
-    fun getAppAuth(@ApplicationContext context : Context): AppAuth {
-        AppAuth.initApp(context)
-       return AppAuth.getInstance1()
+    fun getAppAuth(@ApplicationContext context : Context, api : ApiService): AppAuth {
+       return AppAuth(context, api)
     }
 
 
@@ -83,13 +84,16 @@ internal object ModuleForSingleton {
         .client(okhttp)
         .build()
 
-
+  @Provides
+  fun getPrefs(@ApplicationContext context: Context) : SharedPreferences {
+      return context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+  }
 
     @Provides
-    fun getService(appAuth : AppAuth)  = OkHttpClient.Builder()
+    fun getService(prefs : SharedPreferences)  = OkHttpClient.Builder()
         .addInterceptor(logging)
         .addInterceptor { chain ->
-            appAuth.authStateFlow.value.token?.let { token ->
+            prefs.getString("token", null)?.let { token ->
                 val newRequest = chain.request().newBuilder()
                     .addHeader("Authorization", token)
                     .build()

@@ -7,16 +7,20 @@ import android.os.Build
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.api.ApiService
 import ru.netology.nmedia.auth.AppAuth
 import javax.inject.Inject
 
-class FCMService @Inject constructor(var authp : AppAuth) : FirebaseMessagingService() {
+@AndroidEntryPoint
+class FCMService  : FirebaseMessagingService() {
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
 
+    @Inject
+    lateinit var authp : AppAuth
 
     override fun onCreate() {
         super.onCreate()
