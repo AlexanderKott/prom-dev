@@ -12,8 +12,8 @@ interface KeyIPostDao {
     suspend fun insert(listOf: List<PostKeyEntry>)
 
     @Query ("SELECT MIN(id) FROM PostKeyEntry")
-    fun min(): Long?
+    suspend fun min(): Long?
 
     @Query ("SELECT MAX(id) FROM PostKeyEntry")
-    fun max(): Long?
+    suspend fun max(): Long?
 }

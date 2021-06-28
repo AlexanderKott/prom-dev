@@ -23,6 +23,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -79,9 +80,9 @@ internal object ModuleForSingleton {
 
     @Provides
     fun getRetrofit(okhttp: OkHttpClient) = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(BASE_URL)
+         .baseUrl(BASE_URL)
         .client(okhttp)
+        .addConverterFactory(GsonConverterFactory.create())
         .build()
 
   @Provides
@@ -91,6 +92,9 @@ internal object ModuleForSingleton {
 
     @Provides
     fun getService(prefs : SharedPreferences)  = OkHttpClient.Builder()
+        .connectTimeout(6, TimeUnit.MINUTES)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .addInterceptor { chain ->
             prefs.getString("token", null)?.let { token ->

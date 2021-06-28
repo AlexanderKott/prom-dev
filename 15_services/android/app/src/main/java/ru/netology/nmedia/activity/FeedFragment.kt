@@ -3,6 +3,7 @@ package ru.netology.nmedia.activity
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,8 +53,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onAdClick(ad: AdModel) {
-                 Toast.makeText(requireContext(), "Add clicked ${ad.id}", Toast.LENGTH_LONG).
-                         show()
+                Toast.makeText(requireContext(), "Add clicked ${ad.id}", Toast.LENGTH_LONG).show()
             }
 
             override fun onShare(post: Post) {
@@ -73,11 +73,17 @@ class FeedFragment : Fragment() {
             footer = PagingLoadStateAdapter(adapter::retry)
         )
 
-
-        binding.list.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-       val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
+     
         binding.list.addItemDecoration(
-            object : RecyclerView.ItemDecoration(){
+            DividerItemDecoration(
+                requireContext(),
+                DividerItemDecoration.VERTICAL
+            )
+        )
+
+        val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
+        binding.list.addItemDecoration(
+            object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
                     itemPosition: Int,
@@ -108,19 +114,14 @@ class FeedFragment : Fragment() {
         }
 
         lifecycleScope.launchWhenCreated {
-            adapter.loadStateFlow.collectLatest {states ->
-            binding.swiperefresh.isRefreshing  = states.refresh is LoadState.Loading
-                  //       states.append is LoadState.Loading
-                  //  || states.prepend is LoadState.Loading
-                  //  || states.refresh is LoadState.Loading
+            adapter.loadStateFlow.collectLatest { states ->
+                binding.swiperefresh.isRefreshing = states.refresh is LoadState.Loading
             }
         }
 
 
-
         binding.swiperefresh.setOnRefreshListener {
-           // viewModel.refreshPosts()
-            adapter.refresh()
+            viewModel.refreshPosts()
         }
 
         binding.fab.setOnClickListener {

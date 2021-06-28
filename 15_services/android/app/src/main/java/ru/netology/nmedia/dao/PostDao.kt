@@ -9,7 +9,7 @@ import ru.netology.nmedia.enumeration.AttachmentType
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
-    fun getAll(): PagingSource<Int,PostEntity>
+      fun getAll(): PagingSource<Int,PostEntity>
 
     @Query("SELECT COUNT(*) == 0 FROM PostEntity")
     suspend fun isEmpty(): Boolean
