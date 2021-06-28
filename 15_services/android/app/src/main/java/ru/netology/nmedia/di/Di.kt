@@ -1,6 +1,7 @@
 package ru.netology.nmedia.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.work.WorkManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
@@ -22,6 +23,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,16 +60,16 @@ internal object ModuleForSingleton {
     @Singleton
     @Provides
     fun getPostRepository(db: AppDb, api: ApiService): PostRepository =
-        PostRepositoryImpl(db.postDao(), db.postWorkDao(), api)
+        PostRepositoryImpl(db, api)
 
     @Provides
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
 
 
+    @Singleton
     @Provides
-    fun getAppAuth(@ApplicationContext context : Context): AppAuth {
-        AppAuth.initApp(context)
-       return AppAuth.getInstance1()
+    fun getAppAuth(@ApplicationContext context : Context, api : ApiService): AppAuth {
+       return AppAuth(context, api)
     }
 
 
@@ -78,18 +80,24 @@ internal object ModuleForSingleton {
 
     @Provides
     fun getRetrofit(okhttp: OkHttpClient) = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(BASE_URL)
+         .baseUrl(BASE_URL)
         .client(okhttp)
+        .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-
+  @Provides
+  fun getPrefs(@ApplicationContext context: Context) : SharedPreferences {
+      return context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+  }
 
     @Provides
-    fun getService(appAuth : AppAuth)  = OkHttpClient.Builder()
+    fun getService(prefs : SharedPreferences)  = OkHttpClient.Builder()
+        .connectTimeout(6, TimeUnit.MINUTES)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .addInterceptor { chain ->
-            appAuth.authStateFlow.value.token?.let { token ->
+            prefs.getString("token", null)?.let { token ->
                 val newRequest = chain.request().newBuilder()
                     .addHeader("Authorization", token)
                     .build()

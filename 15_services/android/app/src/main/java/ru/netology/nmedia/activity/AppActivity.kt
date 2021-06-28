@@ -18,11 +18,13 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.viewmodel.PostViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppActivity: AppCompatActivity (R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
+    private val postViewModel: PostViewModel by viewModels()
     private lateinit var fb: FirebaseInstallations
     private lateinit var fbm: FirebaseMessaging
 
@@ -120,6 +122,7 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
             R.id.signout -> {
                 // TODO: just hardcode it, implementation must be in homework
                 appAuth.removeAuth()
+                postViewModel.refreshPosts()
                 true
             }
             else -> super.onOptionsItemSelected(item)

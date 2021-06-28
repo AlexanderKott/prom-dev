@@ -16,12 +16,10 @@ import ru.netology.nmedia.dto.PushToken
 import javax.inject.Inject
 
 
-class AppAuth  @Inject constructor(context: Context) {
+class AppAuth  @Inject constructor(val context: Context, val apiService: ApiService) {
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     private val idKey = "id"
     private val tokenKey = "token"
-
-    lateinit var apiService: ApiService
 
     private val _authStateFlow: MutableStateFlow<AuthState>
 
@@ -42,10 +40,7 @@ class AppAuth  @Inject constructor(context: Context) {
         sendPushToken()
     }
 
-    @Inject
-    fun initApi(apis: ApiService){
-        apiService = apis
-    }
+
 
     val authStateFlow: StateFlow<AuthState> = _authStateFlow.asStateFlow()
 
@@ -81,22 +76,7 @@ class AppAuth  @Inject constructor(context: Context) {
         }
     }
 
-    companion object {
-        @Volatile
-        private var instance: AppAuth? = null
 
-        fun getInstance1(): AppAuth = synchronized(this) {
-            instance ?:  throw IllegalStateException(
-                "AppAuth is not initialized, you must call AppAuth.initializeApp(Context context) first."
-            )
-        }
-
-        fun initApp(context: Context): AppAuth = instance ?: synchronized(this) {
-            instance ?: buildAuth(context).also { instance = it }
-        }
-
-        private fun buildAuth(context: Context): AppAuth = AppAuth(context)
-    }
 }
 
 data class AuthState(val id: Long = 0, val token: String? = null)
